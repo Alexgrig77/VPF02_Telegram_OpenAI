@@ -9,7 +9,7 @@ from aiogram.client.default import DefaultBotProperties
 
 import config
 from context_manager import ContextManager
-from openai_client import OpenAIClient
+from api_client import OpenAIClient
 
 # Настройка логирования
 logging.basicConfig(
@@ -54,9 +54,9 @@ async def cmd_help(message: Message):
     )
 
 
-@dp.message(Command("clear"))
+@dp.message(Command("clear", "reset"))
 async def cmd_clear(message: Message):
-    """Обработчик команды /clear для очистки контекста."""
+    """Обработчик команд /clear и /reset для очистки контекста."""
     user_id = message.from_user.id
     context_manager.clear_context(user_id)
     await message.answer("Контекст диалога очищен. Начнем с чистого листа!")

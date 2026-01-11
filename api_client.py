@@ -30,12 +30,40 @@ class OpenAIClient:
             Текст ответа от модели или None в случае ошибки
         """
         try:
-            logger.info(f"Отправка запроса к OpenAI API. Модель: {self.model}, сообщений: {len(messages)}")
+            # Подготовка параметров запроса
+            request_params = {
+                "model": self.model,
+                "messages": messages,
+            }
             
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
+            # Добавляем temperature и max_tokens если они настроены
+            if hasattr(config, 'TEMPERATURE'):
+                request_params["temperature"] = config.TEMPERATURE
+            if hasattr(config, 'MAX_TOKENS') and config.MAX_TOKENS:
+                request_params["max_tokens"] = config.MAX_TOKENS
+            
+            logger.info(
+                f"Отправка запроса к OpenAI API. "
+                f"Модель: {self.model}, "
+                f"Сообщений: {len(messages)}, "
+                f"Temperature: {request_params.get('temperature', 'default')}, "
+                f"Max tokens: {request_params.get('max_tokens', 'default')}"
             )
+            
+            response = self.client.chat.completions.create(**request_params)
+            
+            # Логируем информацию об использованных токенах
+            if hasattr(response, 'usage'):
+                usage = response.usage
+                prompt_tokens = getattr(usage, 'prompt_tokens', 0)
+                completion_tokens = getattr(usage, 'completion_tokens', 0)
+                total_tokens = getattr(usage, 'total_tokens', 0)
+                
+                logger.info(
+                    f"Использовано токенов - Промпт: {prompt_tokens}, "
+                    f"Ответ: {completion_tokens}, "
+                    f"Всего: {total_tokens}"
+                )
             
             answer = response.choices[0].message.content
             logger.info(f"Получен ответ от OpenAI API. Длина: {len(answer)} символов")

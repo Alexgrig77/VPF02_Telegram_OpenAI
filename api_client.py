@@ -36,18 +36,14 @@ class OpenAIClient:
                 "messages": messages,
             }
             
-            # Добавляем temperature и max_tokens если они настроены
-            if hasattr(config, 'TEMPERATURE'):
-                request_params["temperature"] = config.TEMPERATURE
-            if hasattr(config, 'MAX_TOKENS') and config.MAX_TOKENS:
-                request_params["max_tokens"] = config.MAX_TOKENS
+            # Для модели o4-mini-2025-04-16 параметры temperature и max_tokens не поддерживаются
+            # API использует значения по умолчанию для этой модели
+            # Поэтому не передаем эти параметры
             
             logger.info(
                 f"Отправка запроса к OpenAI API. "
                 f"Модель: {self.model}, "
-                f"Сообщений: {len(messages)}, "
-                f"Temperature: {request_params.get('temperature', 'default')}, "
-                f"Max tokens: {request_params.get('max_tokens', 'default')}"
+                f"Сообщений: {len(messages)}"
             )
             
             response = self.client.chat.completions.create(**request_params)
